@@ -1,0 +1,6 @@
+---
+- name: Deprovision VMs
+  hosts: all
+  connection: local
+  roles:
+    - deprovision

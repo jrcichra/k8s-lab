@@ -1,0 +1,10 @@
+#cloud-config
+
+chpasswd:
+  list: |
+    debian:debian
+  expire: False
+ssh_pwauth: True
+packages:
+  - neofetch
+  - htop

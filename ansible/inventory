@@ -1,0 +1,8 @@
+[all:vars]
+ansible_become_method=sudo
+
+[masters]
+master1
+
+[workers]
+worker1

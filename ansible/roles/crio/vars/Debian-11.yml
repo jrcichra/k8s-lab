@@ -1,0 +1,6 @@
+---
+kubic_apt_gpg_key: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key"
+kubic_apt_gpg_key_local_path: "/usr/share/keyrings/kubic_debian_11_release_key.gpg"
+
+kubic_apt_repository: "deb [signed-by={{ kubic_apt_gpg_key_local_path }} arch={{ kubernetes_apt_arch }}] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11 /"
+crio_apt_repository: "deb [signed-by={{ kubic_apt_gpg_key_local_path }} arch={{ kubernetes_apt_arch }}] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ crio_version }}/Debian_11 /"

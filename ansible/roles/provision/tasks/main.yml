@@ -1,0 +1,40 @@
+---
+- name: Set image_dir fact
+  set_fact:
+    image_dir: "{{ playbook_dir }}/../images"
+
+- name: Create images directory
+  run_once: true
+  file:
+    path: "{{ image_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Download Debian 11
+  run_once: true
+  get_url:
+    url: https://cloud.debian.org/images/cloud/bullseye/20221108-1193/debian-11-generic-amd64-20221108-1193.qcow2
+    dest: "{{ image_dir }}/debian-11-generic-amd64-20221108-1193.qcow2"
+
+- name: Make a copy for this VM
+  copy:
+    src: "{{ image_dir }}/debian-11-generic-amd64-20221108-1193.qcow2"
+    dest: "{{ image_dir }}/{{inventory_hostname}}.qcow2"
+
+- name: Start the VM
+  become: true
+  throttle: 1
+  shell: >
+    virt-install
+    --name {{inventory_hostname}}
+    --memory 4096
+    --vcpus 4
+    --graphics none
+    --os-variant debian11
+    --import
+    --disk {{ image_dir }}/{{inventory_hostname}}.qcow2
+    --graphics none
+    --console pty,target_type=virtio
+    --serial pty
+    --noautoconsole
+    --cloud-init user-data=roles/provision/files/user-data.yml

@@ -1,0 +1,17 @@
+---
+- name: Set image_dir fact
+  set_fact:
+    image_dir: "{{ playbook_dir }}/../images"
+
+- name: Destroy the VM
+  become: true
+  shell: virsh destroy --domain {{ inventory_hostname }}
+
+- name: Undefine the VM
+  become: true
+  shell: virsh undefine --domain {{ inventory_hostname }}
+
+- name: Delete the disk
+  file:
+    path: "{{ image_dir }}/{{inventory_hostname}}.qcow2"
+    state: absent
