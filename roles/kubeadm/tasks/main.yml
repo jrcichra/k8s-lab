@@ -1,0 +1,7 @@
+---
+- name: Install kubeadm packages
+  apt:
+    pkg:
+      - kubeadm
+      - kubelet
+      - kubectl

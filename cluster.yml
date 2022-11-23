@@ -1,0 +1,6 @@
+---
+- name: Build a cluster
+  hosts: all
+  roles:
+    - crio
+    - kubeadm

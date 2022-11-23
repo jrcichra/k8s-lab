@@ -1,7 +1,7 @@
 ---
 - name: Set image_dir fact
   set_fact:
-    image_dir: "{{ playbook_dir }}/../images"
+    image_dir: "{{ playbook_dir }}/images"
 
 - name: Create images directory
   run_once: true
