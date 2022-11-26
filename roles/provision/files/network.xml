@@ -6,7 +6,7 @@
             <port start="1024" end="65535" />
         </nat>
     </forward>
-    <bridge name="virbr2" stp="on" delay="0" />
+    <bridge name="virbr2" stp="off" delay="0" />
     <mac address="52:54:00:1b:86:aa" />
     <domain name="k8s-lab" />
     <ip address="192.168.123.1" netmask="255.255.255.0">

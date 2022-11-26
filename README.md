@@ -30,6 +30,10 @@ worker3   Ready    <none>          3m5s    v1.25.4   192.168.123.179   <none>   
 root@master1:~#
 ```
 
+# Bugs
+
+- cURLing an nginx LB from the host takes wayyyy to long to return
+
 # TODO
 
 - Make everything more customizable through Ansible
