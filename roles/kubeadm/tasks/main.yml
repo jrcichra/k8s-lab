@@ -88,3 +88,11 @@
 - name: Apply flannel
   shell: "kubectl apply -f /tmp/flannel.yml"
   when: inventory_hostname == "master1"
+
+- name: Apply kube-vip Cloud Provider for resolving LoadBalancer
+  shell: kubectl apply -f https://raw.githubusercontent.com/kube-vip/kube-vip-cloud-provider/main/manifest/kube-vip-cloud-controller.yaml
+  when: inventory_hostname == "master1"
+
+- name: Define address pool that kube-vip can use
+  shell: kubectl create configmap -n kube-system kubevip --from-literal range-global=192.168.100.10-192.168.100.99 -o yaml --dry-run | kubectl apply -f -
+  when: inventory_hostname == "master1"

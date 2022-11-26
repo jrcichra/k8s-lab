@@ -25,4 +25,4 @@ root@master1:~#
 
 # TODO
 
-- kube-vip provision `LoadBalancer` IPs using ARP
+- Make everything more customizable through Ansible
