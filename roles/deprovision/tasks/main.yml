@@ -5,11 +5,25 @@
 
 - name: Destroy the VM
   become: true
+  ignore_errors: true
   shell: virsh destroy --domain {{ inventory_hostname }}
 
 - name: Undefine the VM
   become: true
+  ignore_errors: true
   shell: virsh undefine --domain {{ inventory_hostname }}
+
+- name: Stop the network
+  become: true
+  run_once: true
+  ignore_errors: true
+  shell: virsh net-destroy k8s-lab
+
+- name: Delete the network
+  become: true
+  run_once: true
+  ignore_errors: true
+  shell: virsh net-undefine k8s-lab
 
 - name: Delete the disk
   file:

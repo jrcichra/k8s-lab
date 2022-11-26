@@ -2,5 +2,6 @@
 - name: Provision VMs
   hosts: all
   connection: local
+  any_errors_fatal: true
   roles:
     - provision

@@ -1,7 +1,90 @@
 ---
+- name: Install handy packages
+  apt:
+    pkg:
+      - htop
+      - neofetch
+
 - name: Install kubeadm packages
   apt:
     pkg:
       - kubeadm
       - kubelet
       - kubectl
+
+- name: Add K8S modprobes
+  copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      overlay
+      br_netfilter
+
+- name: Run K8S modprobes
+  shell: modprobe overlay && modprobe br_netfilter
+
+- name: Enable sysctls
+  ansible.posix.sysctl:
+    name: "{{item}}"
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+  loop:
+    - "net.bridge.bridge-nf-call-iptables"
+    - "net.bridge.bridge-nf-call-ip6tables"
+    - "net.ipv4.ip_forward"
+
+- name: Add kube-vip to master static pods
+  copy:
+    dest: /etc/kubernetes/manifests/kube-vip.yaml
+    src: roles/kubeadm/files/kube-vip.yaml
+  when: inventory_hostname in groups["masters"]
+
+- name: Init the cluster
+  shell: kubeadm init --upload-certs --control-plane-endpoint=192.168.100.2 --pod-network-cidr=10.244.0.0/16
+  when: inventory_hostname == "master1"
+
+- name: Make root .kube directory
+  file:
+    path: /root/.kube
+    state: directory
+    mode: "0755"
+
+- name: Copy admin.conf to root home
+  copy:
+    remote_src: true
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+  when: inventory_hostname == "master1"
+
+- name: Generate a worker join token
+  shell: kubeadm token create --print-join-command
+  when: inventory_hostname == "master1"
+  register: join_command
+
+- name: Generate a certificate key
+  shell: kubeadm certs certificate-key
+  when: inventory_hostname == "master1"
+  register: certificate_key
+
+- name: Let new key be used for master joins
+  shell: "kubeadm init phase upload-certs --upload-certs --certificate-key={{ hostvars.master1.certificate_key.stdout }}"
+  when: inventory_hostname == "master1"
+
+- name: Join the other masters
+  shell: "{{ hostvars.master1.join_command.stdout }} --control-plane --certificate-key={{ hostvars.master1.certificate_key.stdout }}"
+  when: inventory_hostname in groups["masters"] and inventory_hostname != "master1"
+
+- name: Join the workers
+  shell: "{{ hostvars.master1.join_command.stdout }}"
+  when: inventory_hostname in groups["workers"]
+
+- name: Copy flannel to first master
+  copy:
+    src: roles/kubeadm/files/flannel.yml
+    dest: /tmp/flannel.yml
+  when: inventory_hostname == "master1"
+
+- name: Apply flannel
+  shell: "kubectl apply -f /tmp/flannel.yml"
+  when: inventory_hostname == "master1"

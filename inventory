@@ -1,8 +1,14 @@
 [all:vars]
 ansible_become_method=sudo
+ansible_user=debian
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
 [masters]
-master1
+master1 ansible_host=192.168.100.139
+master2 ansible_host=192.168.100.169
+master3 ansible_host=192.168.100.211
 
 [workers]
-worker1
+worker1 ansible_host=192.168.100.153
+worker2 ansible_host=192.168.100.190
+worker3 ansible_host=192.168.100.179

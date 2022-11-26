@@ -21,6 +21,35 @@
     src: "{{ image_dir }}/debian-11-generic-amd64-20221108-1193.qcow2"
     dest: "{{ image_dir }}/{{inventory_hostname}}.qcow2"
 
+- name: Resize the copies
+  shell: qemu-img resize {{ image_dir }}/{{inventory_hostname}}.qcow2 30G
+
+- name: Create the network
+  become: true
+  run_once: true
+  shell: virsh net-define roles/provision/files/network.xml
+
+- name: Start the network
+  become: true
+  run_once: true
+  shell: virsh net-start k8s-lab
+
+- name: Create temporary file for cloud-init
+  tempfile:
+    state: directory
+    suffix: temp
+  register: user_data_temp
+
+- name: Get the current user's public key
+  slurp:
+    src: "{{ lookup('env','HOME') }}/.ssh/id_rsa.pub"
+  register: user_public_key
+
+- name: Build the cloud init
+  template:
+    src: roles/provision/files/user-data.yml.j2
+    dest: "{{ user_data_temp.path }}/user-data.yml"
+
 - name: Start the VM
   become: true
   throttle: 1
@@ -35,6 +64,22 @@
     --disk {{ image_dir }}/{{inventory_hostname}}.qcow2
     --graphics none
     --console pty,target_type=virtio
+    --network network=k8s-lab
     --serial pty
     --noautoconsole
-    --cloud-init user-data=roles/provision/files/user-data.yml
+    --cloud-init user-data={{ user_data_temp.path }}/user-data.yml
+
+- name: Register the IP
+  become: true
+  shell: set -o pipefail && virsh net-dhcp-leases k8s-lab | grep {{ inventory_hostname }} | awk '{print $5}' | cut -d'/' -f1
+  register: ip_address
+  retries: 10
+  delay: 10
+  until: ip_address.rc == 0
+
+- name: Update inventory with IP address
+  lineinfile:
+    path: inventory
+    regexp: ^{{inventory_hostname}}
+    line: "{{inventory_hostname}} ansible_host={{ip_address.stdout}}"
+  throttle: 1

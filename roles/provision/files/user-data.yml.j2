@@ -1,0 +1,13 @@
+#cloud-config
+
+chpasswd:
+  list: |
+    debian:debian
+  expire: False
+ssh_authorized_keys:
+  - {{ user_public_key['content'] | b64decode }}
+ssh_pwauth: True
+hostname: {{ inventory_hostname }}
+packages:
+  - gnupg2
+
