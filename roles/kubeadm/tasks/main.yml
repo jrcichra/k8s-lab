@@ -41,7 +41,7 @@
   when: inventory_hostname in groups["masters"]
 
 - name: Init the cluster
-  shell: kubeadm init --upload-certs --control-plane-endpoint=192.168.100.2 --pod-network-cidr=10.244.0.0/16
+  shell: kubeadm init --upload-certs --control-plane-endpoint=192.168.123.2 --pod-network-cidr=10.244.0.0/16
   when: inventory_hostname == "master1"
 
 - name: Make root .kube directory
@@ -81,12 +81,12 @@
 
 - name: Copy flannel to first master
   copy:
-    src: roles/kubeadm/files/flannel.yml
-    dest: /tmp/flannel.yml
+    src: roles/kubeadm/files/flannel.yaml
+    dest: /tmp/flannel.yaml
   when: inventory_hostname == "master1"
 
 - name: Apply flannel
-  shell: "kubectl apply -f /tmp/flannel.yml"
+  shell: "kubectl apply -f /tmp/flannel.yaml"
   when: inventory_hostname == "master1"
 
 - name: Apply kube-vip Cloud Provider for resolving LoadBalancer
@@ -94,5 +94,5 @@
   when: inventory_hostname == "master1"
 
 - name: Define address pool that kube-vip can use
-  shell: kubectl create configmap -n kube-system kubevip --from-literal range-global=192.168.100.10-192.168.100.99 -o yaml --dry-run | kubectl apply -f -
+  shell: kubectl create configmap -n kube-system kubevip --from-literal range-global=192.168.123.10-192.168.123.99 -o yaml --dry-run | kubectl apply -f -
   when: inventory_hostname == "master1"
