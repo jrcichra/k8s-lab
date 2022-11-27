@@ -1,0 +1,6 @@
+---
+- name: Remove K8S
+  hosts: all
+  any_errors_fatal: true
+  roles:
+    - remove-k8s

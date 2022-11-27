@@ -1,4 +1,4 @@
-<network>
+<network trustGuestRxFilters="yes">
     <name>k8s-lab</name>
     <uuid>29565a6b-2d31-43a6-8a6b-6fa332390b9c</uuid>
     <forward mode="nat">

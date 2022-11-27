@@ -57,6 +57,13 @@
     dest: /root/.kube/config
   when: inventory_hostname == "master1"
 
+- name: Fetch admin.conf to local system
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: admin.conf
+    flat: yes
+  when: inventory_hostname == "master1"
+
 - name: Generate a worker join token
   shell: kubeadm token create --print-join-command
   when: inventory_hostname == "master1"
@@ -74,6 +81,7 @@
 - name: Join the other masters
   shell: "{{ hostvars.master1.join_command.stdout }} --control-plane --certificate-key={{ hostvars.master1.certificate_key.stdout }}"
   when: inventory_hostname in groups["masters"] and inventory_hostname != "master1"
+  throttle: 1 # for "slower" networks
 
 - name: Join the workers
   shell: "{{ hostvars.master1.join_command.stdout }}"
